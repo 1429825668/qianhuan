@@ -1,0 +1,48 @@
+
+SF_dating_eff_qiuji1.png
+size: 2048,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hehua
+  rotate: false
+  xy: 984, 666
+  size: 242, 246
+  orig: 242, 246
+  offset: 0, 0
+  index: -1
+kuang
+  rotate: false
+  xy: 2, 492
+  size: 980, 420
+  orig: 980, 420
+  offset: 0, 0
+  index: -1
+qihe
+  rotate: false
+  xy: 2, 70
+  size: 980, 420
+  orig: 980, 420
+  offset: 0, 0
+  index: -1
+ye_2
+  rotate: false
+  xy: 1228, 893
+  size: 29, 19
+  orig: 29, 19
+  offset: 0, 0
+  index: -1
+ye_5
+  rotate: false
+  xy: 984, 637
+  size: 34, 27
+  orig: 34, 27
+  offset: 0, 0
+  index: -1
+ye_6
+  rotate: false
+  xy: 2, 2
+  size: 45, 66
+  orig: 45, 66
+  offset: 0, 0
+  index: -1
