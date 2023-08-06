@@ -4,7 +4,7 @@
 ## 角色介绍附加页插件
 ```js
 'use strict';
-window.qhly_import(function(){
+window.qhly_import(function(lib, game, ui, get, ai, _status){
     if(!lib.qhlyPlugins){
         lib.qhlyPlugins = [];
     }

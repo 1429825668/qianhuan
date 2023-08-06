@@ -14,21 +14,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
   //出框调整
   //皮切用自己函数播放出框
   //getSkinFile,setOriginSkin,syncChange
-  return {
+  window.qhly_extension_package = {
     //提示：本扩展源代码基于GPL协议向无名杀社区开放，欢迎大家借鉴和参考代码。
     name: "千幻聆音", content: function (config, pack) {
       //查看是否存在某扩展，用来处理兼容事宜
-      game.qhly_hasExtension = function (str) {
-        if (!str || typeof str != 'string') return false;
-        if (lib.config && lib.config.extensions) {
-          for (var i of lib.config.extensions) {
-            if (i.indexOf(str) == 0) {
-              if (lib.config['extension_' + i + '_enable']) return true;
-            }
-          }
-        }
-        return false;
-      };
+//-----M-----START-----
+//-----M-----END----- 
+      if((lib.config.qhly_funcLoadInPrecontent || game.qhly_hasExtension("如真似幻")) && !window.qhly_inPercontent){
+        return;
+      }
       const qhlyLib = ['qhly_skinShare', 'qhly_skinEdit', 'qhly_skinChange', 'qhly_changeSkillSkin'];
       for (let l of qhlyLib) if (!lib[l]) lib[l] = {};
       qhly_DynamicPlayer = (function () {
@@ -5076,6 +5070,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         //     this.qhly_origin_setBackgroundImage.apply(this, arguments);
         //     return;
         // }
+        if(lib.config.qhly_chooseButtonOrigin){
+          if(this.classList.contains('character') && this.classList.contains('button')){
+            return this.qhly_origin_setBackgroundImage.apply(this, arguments);
+          }
+        }
         if (this.classList.contains('qh-must-replace') || (!this.classList.contains('qh-not-replace') && (lib.config.qhly_forceall || (this.classList.contains('avatar') || this.classList.contains('avatar2'))))) {
           //判断当前的div是否是人物avatar。
           var setByName = function (cname, opath) {
@@ -5158,6 +5157,13 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
 
       HTMLDivElement.prototype.qhly_origin_setBackground = HTMLDivElement.prototype.setBackground;
       HTMLDivElement.prototype.setBackground = function (name, type, ext, subfolder) {
+        if(type == 'character'){
+          if(lib.config.qhly_chooseButtonOrigin){
+            if(this.classList.contains('character') && this.classList.contains('button')){
+              return this.qhly_origin_setBackground.apply(this, arguments);
+            }
+          }
+        }
         if (type == 'character' && (this.classList.contains('qh-must-replace') || (!this.classList.contains('qh-not-replace') && (lib.config.qhly_forceall || (this.classList.contains('avatar') || this.classList.contains('avatar2') || this.classList.contains('primary-avatar') || this.classList.contains('deputy-avatar') || this.classList.contains('button')))))) {
           let that = this;
           var setByName = function (cname) {
@@ -6820,7 +6826,14 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
 
       };
       game.qhly_open_small = function (name, from, ingame) {
+        if(!from){
+          from = game.qhly_getCurrentPlayer(name)[0][0];
+        }
         if (lib.config.qhly_smallwindowstyle == 'dragon' || !lib.config.qhly_smallwindowstyle) {
+          game.qhly_open_small_dragon(name, from, ingame);
+          return;
+        }
+        if(!from && ['decade','shousha'].contains(lib.config.qhly_smallwindowstyle)){
           game.qhly_open_small_dragon(name, from, ingame);
           return;
         }
@@ -7107,7 +7120,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           var zhufu = ui.create.div('.qh-skinchange-decade-zhufu', dialog);
           var zhuskinBut = ui.create.div('.qh-zhuskin', zhufu);
           var fuskinBut = ui.create.div('.qh-fuskin', zhufu);
-          if (cPlayer.name2) {
+          if (cPlayer && cPlayer.name2) {
             dialog.setAttribute('data-double', true);
             if (cPlayer.name2 == name) {
               fuskinBut.classList.add('sel');
@@ -7120,7 +7133,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
           zhuskinBut.listen(function () {
             if (zhuskinBut.classList.contains('sel')) return;
-            if (cPlayer.classList.contains('unseen') && cPlayer != game.me) return;
+            if (cPlayer && cPlayer.classList.contains('unseen') && cPlayer != game.me) return;
             fuskinBut.classList.remove('sel');
             zhuskinBut.classList.add('sel');
             cover.setAttribute('data-visible', 1);
@@ -7128,7 +7141,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           })
           fuskinBut.listen(function () {
             if (fuskinBut.classList.contains('sel')) return;
-            if (cPlayer.classList.contains('unseen2') && cPlayer != game.me) return;
+            if (cPlayer && cPlayer.classList.contains('unseen2') && cPlayer != game.me) return;
             zhuskinBut.classList.remove('sel');
             fuskinBut.classList.add('sel');
             cover.setAttribute('data-visible', 2);
@@ -7157,7 +7170,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 viewState1.skinViews[i].dynamic.renderer.capacity--;
               }
             }
-            if (cPlayer.name2) {
+            if (cPlayer && cPlayer.name2) {
               for (var i = 0; i < viewState2.skinViews.length; i++) {
                 if (viewState2.skinViews[i].dynamic && viewState2.skinViews[i].dynamic.renderer.postMessage) {
                   viewState2.skinViews[i].dynamic.renderer.postMessage({
@@ -7205,7 +7218,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               for (var i = 0; i < this.skinViews.length; i++) {
                 // var skinView = this.skinViews[i].avatar;
                 var skin = this.skins[i];
-                if (game.qhly_skinIs(cPlayer.name1, skin)) {
+                if (cPlayer && game.qhly_skinIs(cPlayer.name1, skin)) {
                   //skinView.style.filter = "grayscale(0)";
                   //skinView.belowText.style.textShadow = '.2rem 0rem .5rem red,-.2rem 0rem .5rem red,0rem .2rem .5rem red,0rem -.2rem .5rem red';
                   this.skinViews[i].defaultskin.setAttribute('data-sel', true);
@@ -7268,7 +7281,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               delete this.mouseDownY;
             }
           };
-          if (cPlayer.name2) {
+          if (cPlayer && cPlayer.name2) {
             var viewState2 = {
               offset: 0,
               skinTotalWidth: 500,
@@ -7302,7 +7315,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 for (var i = 0; i < this.skinViews.length; i++) {
                   // var skinView = this.skinViews[i].avatar;
                   var skin = this.skins[i];
-                  if (game.qhly_skinIs(cPlayer.name2, skin)) {
+                  if (cPlayer && game.qhly_skinIs(cPlayer.name2, skin)) {
                     //skinView.style.filter = "grayscale(0)";
                     //skinView.belowText.style.textShadow = '.2rem 0rem .5rem red,-.2rem 0rem .5rem red,0rem .2rem .5rem red,0rem -.2rem .5rem red';
                     this.skinViews[i].defaultskin.setAttribute('data-sel', true);
@@ -7499,7 +7512,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
 
           //-----------------------------------------主将---------------------------------------------
-          var namex = cPlayer.name1;
+          var namex = cPlayer?cPlayer.name1:name;
           var playZhuDynamic = lib.config['extension_千幻聆音_qhly_decadeDynamic'] == 'always' ? false : true;
           game.qhly_getSkinList(namex, function (ret, list) {
             var pkg = game.qhly_foundPackage(namex);
@@ -7545,15 +7558,19 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               var skinView = ui.create.div('.qh-skinchange-decade-skin', content1);
               skinView.avatar = ui.create.div('.primary-avatar', skinView);
               var campWrap = ui.create.div('.qhcamp-wrap', skinView);
-              campWrap.setAttribute("data-camp", cPlayer.group);
+              if(cPlayer){
+                campWrap.setAttribute("data-camp", cPlayer.group);
+              }
               var playerDengjie = 'one';
               if (!lib.config['extension_千幻聆音_qhly_decadeDengjie'] || lib.config['extension_千幻聆音_qhly_decadeDengjie'] == 'auto') {
-                switch (game.getRarity(cPlayer)) {
-                  case 'common': playerDengjie = 'two'; break;
-                  case 'junk': playerDengjie = 'one'; break;
-                  case 'rare': playerDengjie = 'three'; break;
-                  case 'epic': playerDengjie = 'four'; break;
-                  default: playerDengjie = 'five';
+                if(cPlayer){
+                  switch (game.getRarity(cPlayer)) {
+                    case 'common': playerDengjie = 'two'; break;
+                    case 'junk': playerDengjie = 'one'; break;
+                    case 'rare': playerDengjie = 'three'; break;
+                    case 'epic': playerDengjie = 'four'; break;
+                    default: playerDengjie = 'five';
+                  }
                 }
               }
               else playerDengjie = lib.config['extension_千幻聆音_qhly_decadeDengjie'];
@@ -7706,7 +7723,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     //if (view.dynamicToggle && view.dynamicToggle.classList && !view.dynamicToggle.classList.contains('jing')) {
                     game.qhly_changeDynamicSkin(namex);
                     //}
-                    if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect']) cPlayer.playChangeSkinEffect(false);
+                    if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect'] && cPlayer) cPlayer.playChangeSkinEffect(false);
                     game.qhlySyncConfig();
                     if (lib.config.qhly_smallwinclosewhenchange) {
                       exitListener();
@@ -7738,7 +7755,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }, false);
 
           //--------------------------------------副将---------------------------------------------
-          if (cPlayer.name2) {
+          if (cPlayer && cPlayer.name2) {
             var namey = cPlayer.name2;
             var playFuDynamic = lib.config['extension_千幻聆音_qhly_decadeDynamic'] == 'always' ? false : true;
             game.qhly_getSkinList(namey, function (ret, list) {
@@ -7785,15 +7802,19 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 var skinView = ui.create.div('.qh-skinchange-decade-skin', content2);
                 skinView.avatar = ui.create.div('.primary-avatar', skinView);
                 var campWrap = ui.create.div('.qhcamp-wrap', skinView);
-                campWrap.setAttribute("data-camp", cPlayer.group);
+                if(cPlayer){
+                  campWrap.setAttribute("data-camp", cPlayer.group);
+                }
                 var playerDengjie = 'one';
                 if (!lib.config['extension_千幻聆音_qhly_decadeDengjie'] || lib.config['extension_千幻聆音_qhly_decadeDengjie'] == 'auto') {
-                  switch (game.getRarity(cPlayer)) {
-                    case 'common': playerDengjie = 'two'; break;
-                    case 'junk': playerDengjie = 'one'; break;
-                    case 'rare': playerDengjie = 'three'; break;
-                    case 'epic': playerDengjie = 'four'; break;
-                    default: playerDengjie = 'five';
+                  if(cPlayer){
+                    switch (game.getRarity(cPlayer)) {
+                      case 'common': playerDengjie = 'two'; break;
+                      case 'junk': playerDengjie = 'one'; break;
+                      case 'rare': playerDengjie = 'three'; break;
+                      case 'epic': playerDengjie = 'four'; break;
+                      default: playerDengjie = 'five';
+                    }
                   }
                 }
                 else playerDengjie = lib.config['extension_千幻聆音_qhly_decadeDengjie'];
@@ -7946,7 +7967,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                       //if (view.dynamicToggle && view.dynamicToggle.classList && !view.dynamicToggle.classList.contains('jing')) {
                       game.qhly_changeDynamicSkin(namey, null, null, true);
                       //}
-                      if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect']) cPlayer.playChangeSkinEffect(true);
+                      if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect'] && cPlayer) cPlayer.playChangeSkinEffect(true);
                       game.qhlySyncConfig();
                       if (lib.config.qhly_smallwinclosewhenchange) {
                         exitListener();
@@ -8046,7 +8067,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           var zhufu = ui.create.div('.qh-skinchange-shousha-zhufu', dialog);
           var zhuskinBut = ui.create.div('.qh-zhuskin', zhufu);
           var fuskinBut = ui.create.div('.qh-fuskin', zhufu);
-          if (cPlayer.name2) {
+          if (cPlayer && cPlayer.name2) {
             dialog.setAttribute('data-double', true);
             if (cPlayer.name2 == name) {
               fuskinBut.classList.add('sel');
@@ -8059,7 +8080,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
           zhuskinBut.listen(function () {
             if (zhuskinBut.classList.contains('sel')) return;
-            if (cPlayer.classList.contains('unseen') && cPlayer != game.me) return;
+            if (cPlayer && cPlayer.classList.contains('unseen') && cPlayer != game.me) return;
             game.qhly_playQhlyAudio('qhly_voc_click2', null, true);
             fuskinBut.classList.remove('sel');
             zhuskinBut.classList.add('sel');
@@ -8072,7 +8093,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           })
           fuskinBut.listen(function () {
             if (fuskinBut.classList.contains('sel')) return;
-            if (cPlayer.classList.contains('unseen2') && cPlayer != game.me) return;
+            if (cPlayer && cPlayer.classList.contains('unseen2') && cPlayer != game.me) return;
             game.qhly_playQhlyAudio('qhly_voc_click2', null, true);
             zhuskinBut.classList.remove('sel');
             fuskinBut.classList.add('sel');
@@ -8106,7 +8127,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 viewState1.skinViews[i].dynamic.renderer.capacity--;
               }
             }
-            if (cPlayer.name2) {
+            if (cPlayer && cPlayer.name2) {
               for (var i = 0; i < viewState2.skinViews.length; i++) {
                 if (viewState2.skinViews[i].dynamic && viewState2.skinViews[i].dynamic.renderer.postMessage) {
                   viewState2.skinViews[i].dynamic.renderer.postMessage({
@@ -8154,7 +8175,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             refreshSkins: function () {
               for (var i = 0; i < this.skinViews.length; i++) {
                 var skin = this.skins[i];
-                if (game.qhly_skinIs(cPlayer.name1, skin)) {
+                if (cPlayer && game.qhly_skinIs(cPlayer.name1, skin)) {
                   this.skinViews[i].defaultskin.setAttribute('data-sel', true);
                 } else {
                   this.skinViews[i].defaultskin.setAttribute('data-sel', false);
@@ -8213,7 +8234,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               delete this.mouseDownY;
             }
           };
-          if (cPlayer.name2) {
+          if (cPlayer && cPlayer.name2) {
             var viewState2 = {
               offset: 0,
               skinTotalWidth: 500,
@@ -8247,7 +8268,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               refreshSkins: function () {
                 for (var i = 0; i < this.skinViews.length; i++) {
                   var skin = this.skins[i];
-                  if (game.qhly_skinIs(cPlayer.name2, skin)) {
+                  if (cPlayer && game.qhly_skinIs(cPlayer.name2, skin)) {
                     this.skinViews[i].defaultskin.setAttribute('data-sel', true);
                   } else {
                     this.skinViews[i].defaultskin.setAttribute('data-sel', false);
@@ -8440,7 +8461,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
 
           //-----------------------------------------主将---------------------------------------------
-          var namex = cPlayer.name1;
+          var namex = cPlayer?cPlayer.name1:name;
           var playZhuDynamic = lib.config['extension_千幻聆音_qhly_decadeDynamic'] == 'always' ? false : true;
           game.qhly_getSkinList(namex, function (ret, list) {
             var pkg = game.qhly_foundPackage(namex);
@@ -8486,7 +8507,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               var skinView = ui.create.div('.qh-skinchange-shousha-skin', content1);
               skinView.avatar = ui.create.div('.primary-avatar', skinView);
               var campWrap = ui.create.div('.qhcamp-wrap.shousha', skinView);
+              if(cPlayer){
               campWrap.setAttribute("data-camp", cPlayer.group);
+              }
               skinView.campBack = ui.create.div('.qhcamp-shousha-back', skinView);
               skinView.campBack.setAttribute('data-pinzhi', game.qhly_getSkinLevel(namex, skin));
               var campName = ui.create.div('.qhcamp-name', campWrap);
@@ -8623,7 +8646,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     viewState1.refreshSkins();
                     game.qhly_changeDynamicSkin(namex);
                     game.qhlySyncConfig();
-                    if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect']) cPlayer.playChangeSkinEffect(false);
+                    if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect'] && cPlayer) cPlayer.playChangeSkinEffect(false);
                     if (lib.config.qhly_smallwinclosewhenchange) {
                       exitListener();
                     }
@@ -8650,7 +8673,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 skinView.avatar.qhly_origin_setBackground(namex, 'character');
               }
             }
-            if (cPlayer.name1 == name) {
+            if (cPlayer && cPlayer.name1 == name) {
               if (Math.round(viewState1.skinTotalWidth) >= viewState1.visibleWidth()) cover.setAttribute('data-overstep', true);
               else cover.setAttribute('data-overstep', false);
             }
@@ -8658,7 +8681,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }, false);
 
           //--------------------------------------副将---------------------------------------------
-          if (cPlayer.name2) {
+          if (cPlayer && cPlayer.name2) {
             var namey = cPlayer.name2;
             var playFuDynamic = lib.config['extension_千幻聆音_qhly_decadeDynamic'] == 'always' ? false : true;
             game.qhly_getSkinList(namey, function (ret, list) {
@@ -8705,7 +8728,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 var skinView = ui.create.div('.qh-skinchange-shousha-skin', content2);
                 skinView.avatar = ui.create.div('.primary-avatar', skinView);
                 var campWrap = ui.create.div('.qhcamp-wrap.shousha', skinView);
-                campWrap.setAttribute("data-camp", cPlayer.group);
+                if(cPlayer){
+                  campWrap.setAttribute("data-camp", cPlayer.group);
+                }
                 skinView.campBack = ui.create.div('.qhcamp-shousha-back', skinView);
                 skinView.campBack.setAttribute('data-pinzhi', game.qhly_getSkinLevel(namey, skin));
                 var campName = ui.create.div('.qhcamp-name', campWrap);
@@ -8841,7 +8866,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                       //if (view.dynamicToggle && view.dynamicToggle.classList && !view.dynamicToggle.classList.contains('jing')) {
                       game.qhly_changeDynamicSkin(namey, null, null, true);
                       //}
-                      if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect']) cPlayer.playChangeSkinEffect(true);
+                      if (lib.config['extension_千幻聆音_qhly_decadeChangeEffect'] && cPlayer) cPlayer.playChangeSkinEffect(true);
                       game.qhlySyncConfig();
                       if (lib.config.qhly_smallwinclosewhenchange) {
                         exitListener();
@@ -8868,7 +8893,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                   skinView.avatar.qhly_origin_setBackground(namey, 'character');
                 }
               }
-              if (cPlayer.name2 == name) {
+              if (cPlayer && cPlayer.name2 == name) {
                 if (Math.round(viewState2.skinTotalWidth) >= viewState2.visibleWidth()) cover.setAttribute('data-overstep', true);
                 else cover.setAttribute('data-overstep', false);
               }
@@ -9141,6 +9166,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               _status.qhly_open = false;
             });
             delete _status.qhly_skillAudioWhich;
+            if (window.inSplash && game.qhly_hasExtension("如真似幻")) { 
+              ui.window.remove();
+            }
           });
           gback.hide();
           document.body.appendChild(gback);
@@ -9765,6 +9793,10 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           introduce: {
             pageView: ui.create.div('.qh-page-introduce', view),
             refresh: function (name, state) {
+              var that = this;
+              this.text.refresh = function(){
+                that.refresh(name,state);
+              };
               subView.hp.hide();
               subView.mp.hide();
               subView.avatar.show();
@@ -11774,6 +11806,10 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             pageView: ui.create.div('.qh-page-introduce', shoushaBg),
             refresh: function (name, state) {
               if (!this.inited) this.init(name, state);
+              var that = this;
+              this.text.refresh = function(){
+                that.refresh(name,state);
+              };
               if (!state.introduceExtraPage || state.introduceExtraPage == '简介') {
                 subView.pageButton.introduce.innerHTML = "简介";
                 var intro = get.qhly_getIntroduce(name, state.pkg);
@@ -13854,6 +13890,10 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             pageView: ui.create.div('.qh-page-introduce', view),
             refresh: function (name, state) {
               if (!this.inited) this.init(name, state);
+              var that = this;
+              this.text.refresh = function(){
+                that.refresh(name,state);
+              };
               if (!state.introduceExtraPage || state.introduceExtraPage == '简介') {
                 var intro = get.qhly_getIntroduce(name, state.pkg);
                 this.text.innerHTML = "<br>" + intro + "<br><br><br><br><br><br><br>";
@@ -16521,8 +16561,20 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
         }
       });
-
-    }, precontent: function () {
+//-----Q-----START-----
+    }, precontent: function (config) {
+//-----Q-----END-----
+      game.qhly_hasExtension = function (str) {
+        if (!str || typeof str != 'string') return false;
+        if (lib.config && lib.config.extensions) {
+          for (var i of lib.config.extensions) {
+            if (i.indexOf(str) == 0) {
+              if (lib.config['extension_' + i + '_enable']) return true;
+            }
+          }
+        }
+        return false;
+      };
       if (!lib.config.dev) {
         game.saveConfig('dev', true);
         if (_status.connectMode) return;
@@ -16585,6 +16637,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
       window.qhly_audio_redirect = {
 
       };
+      if(lib.config.qhly_funcLoadInPrecontent || game.qhly_hasExtension('如真似幻')){
+        window.qhly_inPercontent = true;
+        window.qhly_extension_package.content(config,window.qhly_extension_package);
+        window.qhly_inPercontent = false;
+      }
     }, config: {
       /*
       "qhly_newui":{
@@ -17053,6 +17110,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
         }
       },
+      "qhly_chooseButtonOrigin":{
+        "name": "选将界面显示原皮",
+        "intro": "设置此选项，选将界面将显示角色的原有皮肤。",
+        "init": lib.config.qhly_chooseButtonOrigin === undefined ? false : lib.config.qhly_chooseButtonOrigin,
+        onclick: function (item) {
+          game.saveConfig('extension_千幻聆音_qhly_chooseButtonOrigin', item);
+          game.saveConfig('qhly_chooseButtonOrigin', item);
+        }
+      },
       "qhly_mvp": {
         "name": "播放MVP武将的胜利语音",
         "init": false,
@@ -17404,6 +17470,19 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           game.saveConfig('qhly_lolshilizihao', item);
         }
       },
+      "qhly_jianrongxing": {
+        "name": "<font size='5' color='blue'>兼容性相关设置》</font>",
+        "clear": true,
+      },
+      "qhly_funcLoadInPrecontent": {
+        "name": "预处理加载",
+        "intro": "设置此选项，将在预处理阶段加载此扩展的函数，可兼容《如真似幻》等美化扩展。",
+        "init": lib.config.qhly_funcLoadInPrecontent === undefined ? false : lib.config.qhly_funcLoadInPrecontent,
+        onclick: function (item) {
+          game.saveConfig('extension_千幻聆音_qhly_funcLoadInPrecontent', item);
+          game.saveConfig('qhly_funcLoadInPrecontent', item);
+        }
+      },
       "qhly_qitashezhi": {
         "name": "<font size='5' color='blue'>其他》</font>",
         "clear": true,
@@ -17463,7 +17542,8 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.2",
+      version: "4.13.3",
     }, files: { "character": [], "card": [], "skill": [] }
-  }
-})
+  };
+  return window.qhly_extension_package;
+});
