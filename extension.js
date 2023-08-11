@@ -5446,7 +5446,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 if (skills) {
                   for (var skill of skills) {
                     var sinfo = lib.skill[skill];
-                    if (sinfo.audio !== undefined) {
+                    if (sinfo && sinfo.audio !== undefined) {
                       if (typeof sinfo.audio == 'number') {
                         return '';
                       } else if (typeof sinfo.audio == 'string' && sinfo.audio.indexOf('ext:') == 0) {
@@ -9793,15 +9793,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           introduce: {
             pageView: ui.create.div('.qh-page-introduce', view),
             refresh: function (name, state) {
-              var that = this;
-              this.text.refresh = function(){
-                that.refresh(name,state);
-              };
               subView.hp.hide();
               subView.mp.hide();
               subView.avatar.show();
               game.qhly_changeViewPageSkin('introduce', this.pageView);
               if (!this.inited) this.init(name, state);
+              var that = this;
+              this.text.refresh = function(){
+                that.refresh(name,state);
+              };
               if (!state.introduceExtraPage || state.introduceExtraPage == '简介') {
                 subView.pageButton.introduce.innerHTML = "简介";
                 var intro = get.qhly_getIntroduce(name, state.pkg);
