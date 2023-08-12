@@ -18,8 +18,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
     //提示：本扩展源代码基于GPL协议向无名杀社区开放，欢迎大家借鉴和参考代码。
     name: "千幻聆音", content: function (config, pack) {
       //查看是否存在某扩展，用来处理兼容事宜
-//-----M-----START-----
-//-----M-----END----- 
       if((lib.config.qhly_funcLoadInPrecontent || game.qhly_hasExtension("如真似幻")) && !window.qhly_inPercontent){
         return;
       }
@@ -2702,6 +2700,102 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         var foundDot = path.lastIndexOf('.');
         if (foundDot < 0) return path;
         return path.slice(0, foundDot);
+      };
+      window.qhly_createConfigWindow = function(title,buttonText,html,idList){
+          var window = ui.create.div('.qh-config-win');
+          window.qhv = {};
+          window.qhv.title = ui.create.div('.qh-config-win-title',window);
+          window.qhv.title.innerHTML = title;
+          window.qhv.button = ui.create.div('.qh-config-win-button',window);
+          window.qhv.button.innerHTML = buttonText;
+          window.qhv.text = ui.create.div('.qh-config-win-text',window);
+          window.qhv.text.innerHTML = html;
+          lib.setScroll(window.qhv.text);
+          document.body.appendChild(window);
+          if(idList){
+            for(var key of idList){
+              (function(key){
+                var m = document.getElementById(key);
+                window.qhv[key] = m;
+              })(key);
+            }
+          }
+          return window;
+      };
+      window.qhly_openPluginWindow = function(){
+        var html = "";
+        var list = [];
+        var plugins = game.qhly_getPlugins(null,false);
+        var count = 0;
+        var map = {};
+        for(var plugin of plugins){
+          (function(plugin){
+            var name = plugin.label;
+            if(!name){
+              name = plugin.name;
+            }
+            var ph = "<h2>"+name+"</h2>";
+            ph += "<p>";
+            if(plugin.author){
+              ph = ph + "插件作者："+plugin.author+"<br>";
+            }else{
+              ph = ph + "插件作者：未知<br>";
+            }
+            if(plugin.pluginType){
+              ph = ph +"插件类型："+ plugin.pluginType+"<br>";
+            }
+            if(plugin.intro){
+              ph = ph + "<br><font size='2' color='gray'>"+plugin.intro+"</font>";
+            }
+            ph += ("<br><img id='qhly_pluginwindow_plugin_"+count+"'/>"+
+            "<span id='qhly_pluginwindow_plugin_text_"+count+"' style='bottom:10px;'>插件启用</span>");
+            list.push("qhly_pluginwindow_plugin_"+count);
+            list.push("qhly_pluginwindow_plugin_text_"+count);
+            ph += "<br>------------------------------<br>";
+            html = html+ph;
+            map[count] = plugin;
+            count++;
+          })(plugin);
+        }
+        var win = window.qhly_createConfigWindow("插件管理","",html,list);
+        var qhv = win.qhv;
+        qhv.button.setBackgroundImage('extension/千幻聆音/image/qhly_ok2.png');
+        qhv.button.listen(function(){
+          win.delete();
+          game.qhly_playQhlyAudio('qhly_voc_press', null, true);
+        });
+        var bindFunc = function (checkbox, text) {
+          if (!text) return;
+          ui.qhly_addListenFunc(text);
+          text.listen(function () {
+            game.qhly_playQhlyAudio('qhly_voc_check', null, true);
+            checkbox.qhly_setChecked(!checkbox.qhly_checked, true);
+          });
+        };
+        for(var num in map){
+          (function(num){
+            var plugin = map[num];
+            var check = qhv['qhly_pluginwindow_plugin_'+num];
+            var isOpen = lib.config.qhly_disabledPlugins?(!lib.config.qhly_disabledPlugins.contains(game.qhly_getPluginId(plugin))):true;
+            ui.qhly_initCheckBox(check,isOpen);
+            bindFunc(check,qhv['qhly_pluginwindow_plugin_text_'+num]);
+            check.qhly_onchecked=function(check){
+              if(check){
+                if(lib.config.qhly_disabledPlugins){
+                  lib.config.qhly_disabledPlugins.remove(game.qhly_getPluginId(plugin));
+                  game.saveConfig('qhly_disabledPlugins',lib.config.qhly_disabledPlugins);
+                }
+              }else{
+                if(!lib.config.qhly_disabledPlugins){
+                  lib.config.qhly_disabledPlugins = [];
+                }
+                lib.config.qhly_disabledPlugins.push(game.qhly_getPluginId(plugin));
+                game.saveConfig('qhly_disabledPlugins',lib.config.qhly_disabledPlugins);
+              }
+            };
+          })(num);
+        }
+        return win;
       };
       HTMLDivElement.prototype.qhly_listen = function (func) {
         if (lib.config.touchscreen) {
@@ -9205,6 +9299,14 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         }
         return get.characterIntro(name);
       };
+      ui.qhly_bindCheckBoxAndSpanText = function (checkbox, text) {
+        if (!text) return;
+        ui.qhly_addListenFunc(text);
+        text.listen(function () {
+          game.qhly_playQhlyAudio('qhly_voc_check', null, true);
+          checkbox.qhly_setChecked(!checkbox.qhly_checked, true);
+        });
+      };
       ui.qhly_addListenFunc = function (view) {
         view.listen = function (func) {
           if (lib.config.touchscreen) {
@@ -9443,17 +9545,43 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         }
         return ret;
       };
-      game.qhly_getPlugins = function (type) {
+      game.qhly_getPluginId = function(plugin){
+        var pluginId = plugin.id;
+        if(!pluginId){
+          pluginId = plugin.label;
+        }
+        if(!pluginId){
+          pluginId = plugin.name;
+        }
+        if(!pluginId){
+          return false;
+        }
+        return pluginId;
+      };
+      game.qhly_pluginIsEnable = function(plugin){
+        var pluginId = game.qhly_getPluginId(plugin);
+        if(pluginId === false)return false;
+        if(lib.config.qhly_disabledPlugins){
+          return !lib.config.qhly_disabledPlugins.contains(pluginId);
+        }
+        if(!plugin.enable){
+          return true;
+        }
+        if(typeof plugin.enable == 'function'){
+          return plugin.enable();
+        }
+        return plugin.enable;
+      };
+      game.qhly_getPlugins = function (type,enabledOnly) {
+        if(enabledOnly === undefined){
+          enabledOnly = true;
+        }
         var ret = [];
         for (var plugin of lib.qhlyPlugins) {
-          if (typeof plugin.enable == 'function') {
-            if (!plugin.enable()) continue;
-          } else {
-            if (plugin.enable != undefined && !plugin.enable) {
-              continue;
-            }
+          if(enabledOnly){
+            if (!game.qhly_pluginIsEnable(plugin)) continue;
           }
-          if (plugin.pluginType != type) continue;
+          if (type && plugin.pluginType != type) continue;
           ret.push(plugin);
         }
         return ret;
@@ -9469,12 +9597,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           if (extra) {
             ret.addArray(extra);
           }
-        }
-        if (lib.config.qhly_recordWin) {
-          ret.push({
-            name: '战绩',
-            qh_func: 'qhly_getCharacterZhanjiPage',
-          });
         }
         if (lib.qhlyPlugins) {
           for (var plugin of game.qhly_getPlugins('角色介绍附加页')) {
@@ -16824,6 +16946,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           game.saveConfig('qhly_smallwinclosewhenchange', item);
         }
       },
+      /*
       "qhly_recordWin": {
         "name": "展示战绩",
         "intro": "打开此选项，可以在千幻资料页查看战绩。",
@@ -16832,7 +16955,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           game.saveConfig('extension_千幻聆音_qhly_recordWin', item);
           game.saveConfig('qhly_recordWin', item);
         }
-      },
+      },*/
       "qhly_randskin": {
         "name": "随机皮肤",
         "intro": "打开此选项，游戏开始时，会随机更换皮肤。",
@@ -17518,6 +17641,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
         }
       },
+      "qhly_plugin": {
+        "name": "<b>点击设置插件</b>",
+        "clear": true,
+        onclick: function () {
+          if(window.qhly_openPluginWindow){
+            window.qhly_openPluginWindow();
+          }
+        }
+      },
     }, help: {}, package: {
       character: {
         character: {
@@ -17538,11 +17670,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.13.5"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.3",
+      version: "4.13.5",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;

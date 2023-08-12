@@ -1942,3 +1942,58 @@
   height: 100%;
   pointer-events: none;
 }
+
+.qh-config-win{
+  display: block;
+  z-index: 25;
+  width: 616px;
+  height: 476px;
+  background-position: center;
+  background-image: url('image/config_window.png');
+  background-repeat: no-repeat;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.qh-config-win>.qh-config-win-title{
+  display: block;
+  z-index: 1;
+  left:calc(38.47%);
+  top:calc(6.72%);
+  width: calc(23.21%);
+  height: calc(5.25%);
+  font-family: 'qh_heiti';
+  color:white;
+  text-align: center;
+  font-size: 21px;
+}
+
+.qh-config-win>.qh-config-win-text{
+  display: block;
+  z-index: 1;
+  left:calc(5.36%);
+  top:calc(18.07%);
+  width: calc(88.47%);
+  height: calc(64.08%);
+  font-family: 'qh_heiti';
+  color:white;
+  font-size: 15px;
+  overflow: scroll;
+}
+
+.qh-config-win>.qh-config-win-button{
+  display: block;
+  z-index: 1;
+  left:calc(39.12%);
+  bottom:calc(4.62%);
+  width: calc(21.59%);
+  height: calc(10.92%);
+  font-family: 'qh_heiti';
+  color:white;
+  text-align: center;
+  font-size: 40px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}

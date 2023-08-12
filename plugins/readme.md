@@ -9,9 +9,12 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
         lib.qhlyPlugins = [];
     }
     lib.qhlyPlugins.push({
+        id:"xxxxxx",//为插件指定一个ID。最好用一个随机字符串，防止与别的插件重复。
         author:"作者",//作者
         pluginType:'角色介绍附加页',//表示插件类型
         name:'插件',//“角色介绍附加页”显示的名字，限制两个字。
+        label:"插件正式命名，名字较长",
+        intro:"插件介绍。",
         enable:function(){
             return true;//插件是否可用
         },

@@ -4,9 +4,12 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
         lib.qhlyPlugins = [];
     }
     lib.qhlyPlugins.push({
+        id:"diy_editor_123456",
         pluginType:'角色介绍附加页',//表示插件类型
         name:'制卡',//“角色介绍附加页”显示的名字。
         author:'寰宇星城',
+        label:"DIY Editor制卡器",
+        intro:"此插件仅在安装了DIYEditor扩展时生效，用于调用制卡器，直接根据技能、皮肤生成卡牌图片。DIYEditor扩展可在群828182346下载。",
         enable:function(){
             return game.qhly_hasExtension('DIYEditor');//插件是否可用
         },
