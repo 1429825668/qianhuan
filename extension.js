@@ -9561,8 +9561,8 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
       game.qhly_pluginIsEnable = function(plugin){
         var pluginId = game.qhly_getPluginId(plugin);
         if(pluginId === false)return false;
-        if(lib.config.qhly_disabledPlugins){
-          return !lib.config.qhly_disabledPlugins.contains(pluginId);
+        if(lib.config.qhly_disabledPlugins && lib.config.qhly_disabledPlugins.contains(pluginId)){
+          return false;
         }
         if(!plugin.enable){
           return true;
