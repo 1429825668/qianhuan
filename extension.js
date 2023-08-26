@@ -1000,7 +1000,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           this.classList.add(_status.video ? 'unseen_v' : 'unseen');
           this.name = 'unknown';
           if (!this.node.name_seat && !_status.video) {
-            this.node.name_seat = ui.create.div('.name.name_seat', get.verticalStr(get.translation(this.name)), this);
+            this.node.name_seat = ui.create.div('.name.name_seat', get.qhly_verticalStr(get.translation(this.name)), this);
             this.node.name_seat.dataset.nature = get.groupnature(this.group);
           }
           this.sex = 'male';
@@ -5209,7 +5209,26 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         }
         return dest + realName + "/" + skin;
       };
-
+      //竖排文字原版
+      get.qhly_verticalStr=function(str,sp){
+        if(typeof str!='string') return '';
+        str=str.toUpperCase();
+        var str2='';
+        var nobreak=false;
+        for(var i=0;i<str.length;i++){
+            if(str[i]=='`'){
+                nobreak=!nobreak;continue;
+            }
+            str2+=str[i];
+            if(nobreak) continue;
+            if(sp&&str[i]=='S'&&str[i+1]=='P') continue;
+            if(/[0-9]/.test(str[i])&&/[0-9]/.test(str[i+1])) continue;
+            if(i<str.length-1){
+                str2+='<br>';
+            }
+        }
+        return str2;
+    };
       //获取皮肤名称。
       game.qhly_getSkin = function (name) {
         if (name.indexOf('gz_') == 0) {
@@ -5890,8 +5909,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             }
           }
         }
-        if (game.thunderFileExist)
-          return viewSkills;
+        return viewSkills;
       }
       //设置当前的皮肤。
       game.qhly_setCurrentSkin = function (name, skin, callback, save) {
@@ -11430,7 +11448,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 ctitle = ctitle.slice(2);
               }
             }
-            subView.characterTitle.innerHTML = get.verticalStr(lib.qhly_filterPlainText(ctitle));
+            subView.characterTitle.innerHTML = get.qhly_verticalStr(lib.qhly_filterPlainText(ctitle));
           };
           state.onChangeSkin();
           refreshRank();
@@ -11452,7 +11470,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           } else {
             subView.pageButton.introduce.downButton.hide();
           }
-          var vname = get.verticalStr(chname);
+          var vname = get.qhly_verticalStr(chname);
           subView.name.innerHTML = vname;
           if (chname.length == 5) {
             subView.name.style.fontSize = '2.6em';
@@ -13347,7 +13365,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 }
               }
             } else {
-              subView.characterTitle.innerHTML = get.verticalStr(lib.qhly_filterPlainText(ctitle));
+              subView.characterTitle.innerHTML = get.qhly_verticalStr(lib.qhly_filterPlainText(ctitle));
             }
           };
           state.onChangeSkin();
@@ -13414,7 +13432,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           if (currentViewSkin.isQiLayout) {
             subView.name.innerHTML = chname;
           } else {
-            var vname = get.verticalStr(chname);
+            var vname = get.qhly_verticalStr(chname);
             subView.name.innerHTML = vname;
           }
           if (!currentViewSkin.isQiLayout && !currentViewSkin.isLolBigLayout) {
@@ -15619,11 +15637,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "版本号："+"4.13.6"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.13.7"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.6",
+      version: "4.13.7",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;

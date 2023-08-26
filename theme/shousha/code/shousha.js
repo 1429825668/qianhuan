@@ -1,24 +1,5 @@
 'use strict';
 window.qhly_import(function(lib, game, ui, get, ai, _status){
-    get.qhly_verticalStr=function(str,sp){
-        if(typeof str!='string') return '';
-        str=str.toUpperCase();
-        var str2='';
-        var nobreak=false;
-        for(var i=0;i<str.length;i++){
-            if(str[i]=='`'){
-                nobreak=!nobreak;continue;
-            }
-            str2+=str[i];
-            if(nobreak) continue;
-            if(sp&&str[i]=='S'&&str[i+1]=='P') continue;
-            if(/[0-9]/.test(str[i])&&/[0-9]/.test(str[i+1])) continue;
-            if(i<str.length-1){
-                str2+='<br>';
-            }
-        }
-        return str2;
-    };
     game.qhly_initShoushaView = function (name, view, page, cplayer) {
         var currentViewSkin = lib.qhly_viewskin[lib.config.qhly_currentViewSkin];
         var subView = {};
