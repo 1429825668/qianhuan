@@ -9126,9 +9126,18 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         'step 1'
         game.delayx(0.5);
       }
+      game.qhly_checkLoadSuccess = function(){
+        if(lib.config.qhly_currentViewSkin == 'shousha' && !game.qhly_initShoushaView){
+          return false;
+        }
+        return true;
+      };
       //打开选择皮肤界面。
       game.qhly_open_new = function (name, page, ingame) {
         try {
+          if(!game.qhly_checkLoadSuccess()){
+              return;
+          }
           //if(name.indexOf('gz_') == 0){
           //    name = name.slice(3);
           //}
@@ -9196,7 +9205,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           gback.hide();
           document.body.appendChild(gback);
           if (lib.config.qhly_currentViewSkin == 'decade') game.qhly_initDecadeView(name, background, page, cplayer);
-          else if (lib.config.qhly_currentViewSkin == 'shousha') game.qhly_initShoushaView(name, background, page, cplayer);
+          else if (lib.config.qhly_currentViewSkin == 'shousha') {
+            if(game.qhly_initShoushaView){
+              game.qhly_initShoushaView(name, background, page, cplayer);
+            }
+          }
           else game.qhly_initNewView(name, background, page, cplayer);
           gback.show();
           game.pause2();
@@ -14710,7 +14723,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
       });
       if(lib.qhly_viewskin[lib.config.qhly_currentViewSkin] && lib.qhly_viewskin[lib.config.qhly_currentViewSkin].hasJs){
         var vsJsPath = lib.qhly_path + 'theme/'+lib.config.qhly_currentViewSkin+"/code/"+lib.config.qhly_currentViewSkin+".js";
-        lib.init.js(vsJsPath);
+        if(lib.init.jsForExtension){
+          lib.init.jsForExtension(vsJsPath);
+        }else{
+          lib.init.js(vsJsPath);
+        }
       }
       window.qhly_audio_redirect = {
 
@@ -15637,11 +15654,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "版本号："+"4.13.7"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.13.7.1"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.7",
+      version: "4.13.8",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;

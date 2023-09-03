@@ -24,7 +24,7 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
                 var skillInfo = get.info(skill);
                 if(skillInfo){
                     str += "<br>技能描述：<br>";
-                    str += get.translation(skill+"_info");
+                    str += lib.translate[skill+"_info"];
                     str += "<br><br>代码：<br>";
                     str += "<textarea id='qh_input_skill_"+skill+"'>";
                     str += "</textarea>";
