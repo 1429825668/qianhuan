@@ -3448,6 +3448,65 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         }
         return false;
       };
+      game.qhly_chooseDialog = function(title,detail,initValue,list,onok,onclose){
+        if (!_status.qhly_chooseDialogId) {
+          _status.qhly_chooseDialogId = 0;
+        }
+        var id = _status.qhly_chooseDialogId;
+        _status.qhly_chooseDialogId++;
+        if(!list)list = [];
+        var dialog = ui.create.div('.qh-editdialog');
+        if (lib.config.qhly_currentViewSkin == 'decade') dialog.classList.add('decade')
+        var content = ui.create.div('.qh-editdialog-inner', dialog);
+        var below = ui.create.div('.qh-editdialog-below', dialog);
+        var text = "<h2>" + title + "</h2>";
+        if (detail) {
+          text += "<p>" + detail + "</p>";
+        }
+        text += '<select id="qhly_choose_' + id + '" style="width:100%;height:30px;"></select><br><br>'
+        var belowButton = "";
+        belowButton += '<img src="' + lib.qhly_path + 'image/qhly_ok2.png" id="qhly_choose_okbutton' + id + '"/>&nbsp;&nbsp;&nbsp;&nbsp;';
+        belowButton += '<img src="' + lib.qhly_path + 'image/qhly_cancel2.png" id="qhly_choose_cancelbutton' + id + '"/>';
+        content.innerHTML = text;
+        below.innerHTML = belowButton;
+        document.body.appendChild(dialog);
+        var img1 = document.getElementById('qhly_choose_okbutton' + id);
+        var img2 = document.getElementById('qhly_choose_cancelbutton' + id);
+        var input = document.getElementById('qhly_choose_' + id);
+        for(var item of list){
+          var obj = item;
+          if(typeof obj == 'string'){
+            obj = {name:obj,id:obj};
+          }
+          var opt = document.createElement('option');
+          opt.innerHTML = obj.name + (obj.label?('['+obj.label+']'):"");
+          opt.setAttribute('select_id', obj.id);
+          if(initValue == obj.id){
+            opt.selected = 'selected';
+          }
+          input.appendChild(opt);
+        }
+        var choose = {};
+        ui.qhly_addListenFunc(img1);
+        ui.qhly_addListenFunc(img2);
+        img1.listen(function () {
+          if (onok) {
+            var opt = input.options[input.selectedIndex];
+            onok(opt.getAttribute('select_id'), dialog);
+          }
+        });
+        img2.listen(function () {
+          if (onclose) {
+            if (onclose(dialog)) {
+              dialog.delete();
+            }
+          } else {
+            dialog.delete();
+          }
+        });
+        input.focus();
+        return dialog;
+      }
       game.qhly_editDialog = function (title, detail, initValue, onok, onclose) {
         if (!_status.qhly_editDialogId) {
           _status.qhly_editDialogId = 0;
@@ -5738,7 +5797,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
         });
       };
-
+      game.qhly_copyText = function(text){
+        if(!navigator.clipboard){
+          alert("你使用的游戏版本不支持复制字符串");
+          return;
+        }
+        navigator.clipboard.writeText(text).then(e => {
+          alert("复制成功");
+        });
+      };
       game.qhly_writeTextFile = function (str, path, filename, callback) {
         if (lib.device) {
           game.ensureDirectory(path, function () {
@@ -5945,6 +6012,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                   }
                   let arr = [];
                   let list = lib.config.qhly_skinset.skinAudioList[name];
+                  let diePath = game.qhly_getDieAudioOriginalPath(name);
                   if (list) {
                     for (let m of list) {
                       if (skinPackage2.isExt && m.indexOf('skill/') == 0) {
@@ -5955,20 +6023,22 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                   }
                   if (skinPackage2.isExt) {
                     delete lib.config.qhly_skinset.audioReplace["../" + extAudioPath + name];
+                    delete lib.config.qhly_skinset.audioReplace[diePath];
                     delete lib.config.qhly_skinset.audioReplace["../" + extAudioPath + 'victory'];
                     delete lib.config.qhly_skinset.audioReplace["../" + skinPackage2.audio + name + '/victory'];
                   }
                   else {
                     delete lib.config.qhly_skinset.audioReplace['die/' + name];
+                    delete lib.config.qhly_skinset.audioReplace[diePath];
                     delete lib.config.qhly_skinset.audioReplace['victory/' + name];
                   }
                   for (let file of files) {
                     file = game.qhly_earse_ext(file);
                     if (!skinPackage.isExt || realName != name) {
                       if (file == realName) {
-                        arr.push("die/" + name);
-                        if (skinPackage2.isExt) lib.config.qhly_skinset.audioReplace["../" + extAudioPath + name] = "../" + path + "/" + realName;
-                        else lib.config.qhly_skinset.audioReplace["die/" + name] = "../" + path + "/" + realName;
+                        arr.push(diePath);
+                        if (skinPackage2.isExt) lib.config.qhly_skinset.audioReplace[diePath] = "../" + path + "/" + realName;
+                        else lib.config.qhly_skinset.audioReplace[diePath] = "../" + path + "/" + realName;
                       } else if (file == 'victory') {
                         arr.push("victory/" + name);
                         if (skinPackage2.isExt) lib.config.qhly_skinset.audioReplace["../" + path + '/victory'] = "../" + path + '/victory';
@@ -6019,8 +6089,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                       if (typeof audioOrigin == 'function') {
                         audioOrigin = audioOrigin(name);
                       }
-                      arr.push("../" + audioOrigin + file);
-                      lib.config.qhly_skinset.audioReplace["../" + audioOrigin + file] = "../" + path + "/" + file;
+                      if(file == name){
+                        var diePathOrigin = game.qhly_getDieAudioOriginalPath(name);
+                        arr.push(diePathOrigin);
+                        lib.config.qhly_skinset.audioReplace[diePathOrigin] = "../" + path + "/" + file;
+                      }else{
+                        arr.push("../" + audioOrigin + file);
+                        lib.config.qhly_skinset.audioReplace["../" + audioOrigin + file] = "../" + path + "/" + file;
+                      }
+                      //lib.config.qhly_skinset.audioReplace["../" + audioOrigin + file] = "../" + path + "/" + file;
                     }
                   }
                   lib.config.qhly_skinset.skinAudioList[name] = arr;
@@ -6046,7 +6123,8 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     delete lib.config.qhly_skinset.audioReplace[m];
                   }
                 }
-                delete lib.config.qhly_skinset.audioReplace['die/' + name];
+                //delete lib.config.qhly_skinset.audioReplace['die/' + name];
+                delete lib.config.qhly_skinset.audioReplace[game.qhly_getDieAudioOriginalPath(name)];
                 //delete lib.config.qhly_skinset.audioReplace['victory/' + name];
                 lib.config.qhly_skinset.skinAudioList[name] = arr;
                 lib.config.qhly_skinset.skin[name] = skin;
@@ -6108,9 +6186,47 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         if (!skin[name]) return fallback;
         return skin[name];
       };
+      game.qhly_getDieAudioOriginalPath = function(name){
+        if(lib.character[name]&&lib.character[name][4].some(tag=>/^die:.+$/.test(tag))){
+          const tag=lib.character[name][4].find(tag=>/^die:.+$/.test(tag));
+          const reg=new RegExp("^ext:(.+)?/");
+          const match=tag.match(/^die:(.+)$/);
+          if(match){
+            let path=match[1];
+            if(reg.test(path)) path=path.replace(reg,(_o,p)=>`../extension/${p}/`);
+            return path;
+          }
+        }
+        var skinPackage = game.qhly_foundPackage(name);
+        if (skinPackage.isExt) {
+          var path = skinPackage.audioOrigin;
+          if (typeof path == 'function') {
+            path = path(name);
+          }
+          path = path + name;
+          return "../"+path;
+        } else {
+          /*
+          _status.qhly_audioTry = game.playAudio("die", name, function () {
+            _status.qhly_audioTry = game.playAudio('die', name.slice(name.indexOf('_') + 1));
+          });*/
+          return "die/"+name;
+        }
+      };
       //播放死亡配音。
       window.qhly_playDieAudio = function (name) {
         if (_status.qhly_audioTry) _status.qhly_audioTry.remove();
+        if(lib.character[name]&&lib.character[name][4].some(tag=>/^die:.+$/.test(tag))){
+          const tag=lib.character[name][4].find(tag=>/^die:.+$/.test(tag));
+          const reg=new RegExp("^ext:(.+)?/");
+          const match=tag.match(/^die:(.+)$/);
+          if(match){
+            let path=match[1];
+            if(reg.test(path)) path=path.replace(reg,(_o,p)=>`../extension/${p}/`);
+            _status.qhly_audioTry = game.playAudio(path);
+            return;
+          }
+        }
         var skinPackage = game.qhly_foundPackage(name);
         if (skinPackage.isExt) {
           var path = skinPackage.audioOrigin;
@@ -15654,11 +15770,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "版本号："+"4.13.7.1"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.13.8.1"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.8",
+      version: "4.13.8.1",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;

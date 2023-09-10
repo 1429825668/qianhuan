@@ -20,12 +20,14 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
             var str = "";
             var skills = game.qhly_getViewSkills(name);
             for(var skill of skills){
-                str += "技能："+get.translation(skill)+"<br>";
+                str += "技能："+get.translation(skill)+"&nbsp;[<font color='blue'>"+skill+"</font>]"+"<br>";
                 var skillInfo = get.info(skill);
                 if(skillInfo){
                     str += "<br>技能描述：<br>";
                     str += lib.translate[skill+"_info"];
-                    str += "<br><br>代码：<br>";
+                    str += "<br><br>代码：";
+                    str += "<img id='qh_code_copy_"+skill+"' src='"+lib.assetURL+"extension/千幻聆音/image/copy.png' style='width:25px;height:25px;'/>";
+                    str += "<br>";
                     str += "<textarea id='qh_input_skill_"+skill+"'>";
                     str += "</textarea>";
                 }else{
@@ -35,13 +37,25 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
             }
             return str;
         },
+        banSkillInfoKey:['_priority'],
+        filterSkillInfo:function(info){
+            var info2 = {};
+            for(var key in info){
+                if(!this.banSkillInfoKey.contains(key)){
+                    info2[key] = info[key];
+                }
+            }
+            return get.stringify(info2);
+        },
         handleView:function(view,name){
+            var that = this;
             var func = function(){
                 var skills = game.qhly_getViewSkills(name);
                 for(var skill of skills){
                     var input = document.getElementById('qh_input_skill_'+skill);
+                    var copyImg = document.getElementById('qh_code_copy_'+skill);
                     if(input){
-                        var argi="lib.skill['"+skill+"']="+get.stringify(get.info(skill));
+                        var argi="lib.skill['"+skill+"']="+that.filterSkillInfo(get.info(skill));
                         var editor = window.CodeMirror.fromTextArea(input,{
                             mode:'javascript',
                             lineNumbers: true,     
@@ -52,6 +66,14 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
                         });
                         editor.setValue(argi);
                         editor.setSize("100%","300px");
+                        if(copyImg){
+                            ui.qhly_addListenFunc(copyImg);
+                            (function(skill,argi){
+                                copyImg.listen(function(){
+                                    game.qhly_copyText(argi);
+                                });
+                            })(skill,argi);
+                        }
                         //lib.setScroll(input);
                     }
                 }

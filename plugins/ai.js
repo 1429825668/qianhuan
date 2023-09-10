@@ -20,17 +20,24 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
             name:"主公禁将",
             key:"zhu",
         }
-        /*
         ,{
             name:"忠臣禁将",
             key:"zhong",
         },{
             name:"反贼禁将",
             key:'fan',
-        }*/
+        }
         ,{
             name:"内奸禁将",
             key:"nei",
+        }
+        ,{
+            name:"地主禁将",
+            key:"dizhu",
+        }
+        ,{
+            name:"农民禁将",
+            key:"nongmin",
         }/*,{
             name:"地主禁将",
             key:"yi",
