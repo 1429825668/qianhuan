@@ -9,7 +9,7 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
         name:'特效',
         author:'寰宇星城',
         label:"《特效测试》扩展插件",
-        intro:"此插件为千幻聆音自带，当安装了《特效测试》扩展时，可通过此页面编辑技能特效。",
+        intro:"此插件仅当安装了《特效测试》扩展时生效，可通过此页面编辑技能特效。",
         enable:function(){
             return game.qhly_hasExtension('特效测试') && window.txcsanm && lib.config.txcsanm_skillAnimation2 && lib.config.txcsanm_skillAnimation;//插件是否可用
         },
