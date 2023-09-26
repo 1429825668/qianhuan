@@ -1831,6 +1831,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               if (!player._qhlyIsChanged) player._qhlyIsChanged = [0, 0];
               player._qhlyIsChanged[i] = 1 - player._qhlyIsChanged[i];
               player.node['avatar' + (i ? '2' : '')].qhly_origin_setBackgroundImage(player._qhly_skinChange[i]);
+              if (!_status.qhly_replaceSkin) _status.qhly_replaceSkin = {};
               if (!_status.qhly_replaceSkin[playerName]) _status.qhly_replaceSkin[playerName] = {};
               _status.qhly_replaceSkin[playerName][skin] = player._qhly_skinChange[i];
               if (window.decadeUI && !game.qhly_hasExtension('皮肤切换') && !game.qhly_hasExtension('EpicFX')) game.qhly_changeDynamicSkin(player, undefined, undefined, i == 1);
