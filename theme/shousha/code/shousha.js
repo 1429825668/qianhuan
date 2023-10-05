@@ -1335,6 +1335,12 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
                       '动态': 'dongtai',
                       '绝版': 'jueban',
                     };
+                    if(lib.qhly_diylevels){
+                      for(var key in lib.qhly_diylevels){
+                        map[key] = "^^"+lib.qhly_diylevels[key];
+                        levels.add(key);
+                      }
+                    }
                     if (!lib.qhly_level[name + '_' + currentSkin.skinId]) {
                       opt.selected = 'selected';
                     }
@@ -1366,10 +1372,17 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
                           }
                         }
                         if (currentSkinView) currentSkinView.campBack.setAttribute('data-pinzhi', game.qhly_getSkinLevel(name, currentSkin.skinId));
-                        var skinQua = document.getElementById('qhly_skinQua' + currentIndex);
-                        if (skinQua) {
-                          skinQua.setBackgroundImage('extension/千幻聆音/image/' + game.qhly_getSkinLevel(name, currentSkin.skinId) + '.png');
-                          //skinQua.show();
+                        var level = lib.qhly_level[name + '_' + currentSkin.skinId];
+                        if(level&& map[level] && map[level].startsWith("^^")){
+                          var skinQua = document.getElementById('qhly_skinQua' + currentIndex);
+                          if (skinQua) {
+                            skinQua.setBackgroundImage('extension/千幻聆音/image/diylevels/' + map[level].replace("^^",""));
+                          }
+                        }else{
+                          var skinQua = document.getElementById('qhly_skinQua' + currentIndex);
+                          if (skinQua) {
+                            skinQua.setBackgroundImage('extension/千幻聆音/image/' + game.qhly_getSkinLevel(name, currentSkin.skinId) + '.png');
+                          }
                         }
                       }
                       refreshRank();

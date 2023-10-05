@@ -16,9 +16,25 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
         characterFilter:function(name){
             return true;
         },
+        getCodeSkills:function(name){
+            var skills = game.qhly_getViewSkills(name);
+            var ret = [];
+            for(var skill of skills){
+                ret.push(skill);
+                var info = get.info(skill);
+                if(info && info.global){
+                    if(typeof info.global == 'string'){
+                        ret.push(info.global);
+                    }else if(Array.isArray(info.global)){
+                        ret.addArray(info.global);
+                    }
+                }
+            }
+            return ret;
+        },
         content:function(name){
             var str = "";
-            var skills = game.qhly_getViewSkills(name);
+            var skills = this.getCodeSkills(name);
             for(var skill of skills){
                 str += "技能："+get.translation(skill)+"&nbsp;[<font color='blue'>"+skill+"</font>]"+"<br>";
                 var skillInfo = get.info(skill);
@@ -50,7 +66,7 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
         handleView:function(view,name){
             var that = this;
             var func = function(){
-                var skills = game.qhly_getViewSkills(name);
+                var skills = that.getCodeSkills(name);
                 for(var skill of skills){
                     var input = document.getElementById('qh_input_skill_'+skill);
                     var copyImg = document.getElementById('qh_code_copy_'+skill);

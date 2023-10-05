@@ -989,7 +989,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         this.node.intro.innerHTML = lib.config.intro;
         this.node.name.dataset.nature = get.groupnature(this.group);
         lib.setIntro(this);
-        this.node.name.innerHTML = get.slimName(character);
+        this.node.name.innerHTML = lib.qhly_slimName(character);
         if (this.classList.contains('minskin') && this.node.name.querySelectorAll('br').length >= 4) {
           this.node.name.classList.add('long');
         }
@@ -1069,7 +1069,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
           else skills = skills.concat(info2[3]);
 
-          this.node.name2.innerHTML = get.slimName(character2);
+          this.node.name2.innerHTML = lib.qhly_slimName(character2);
         }
         if (this.storage.nohp) {
           this.storage.rawHp = this.hp;
@@ -1080,6 +1080,10 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         }
         if (skill != false) {
           for (var i = 0; i < skills.length; i++) {
+            var info = get.info(skills[i]);
+            if(info && info.zhuSkill && ((typeof this.isZhu2!='function') || !this.isZhu2())){
+              continue;
+            }
             this.addSkill(skills[i]);
           }
           this.checkConflict();
@@ -1437,7 +1441,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
           if (smooth) this.smoothAvatar(true);
           this.node.avatar2.setBackground(to, 'character');
-          this.node.name2.innerHTML = get.slimName(to);
+          this.node.name2.innerHTML = lib.qhly_slimName(to);
           if (window.qhly_newDynamicExt) {
             data.zhu = false;
             data.to = to;
@@ -1454,7 +1458,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
           if (smooth) this.smoothAvatar(false);
           this.node.avatar.setBackground(to, 'character');
-          this.node.name.innerHTML = get.slimName(to);
+          this.node.name.innerHTML = lib.qhly_slimName(to);
 
           if (this == game.me && ui.fakeme) {
             ui.fakeme.style.backgroundImage = this.node.avatar.style.backgroundImage;
@@ -2668,6 +2672,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         var regex = /(<([^>]+)>)/ig;
         return str.replace(regex, "");
       };
+      lib.qhly_slimName = function(str){
+        return get.slimName(str);
+      };
       lib.qhly_getSkillKeyWordColorList = function () {
         if (!lib.config.qhly_keymark) return null;
         if (lib.config.qhly_keymark.length == 0) return null;
@@ -3351,18 +3358,18 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
       game.saveConfig('qhly_newui', true);
       //}
       if (ui && ui.css && ui.css.fontsheet && ui.css.fontsheet.sheet && ui.css.fontsheet.sheet.insertRule) {
-        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_heiti';src: url('" + lib.qhly_path + "font/heiti.ttf');}", 0);
-        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_zhunyuan';src: url('" + lib.qhly_path + "font/zhunyuan.ttf');}", 0);
-        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_youyuan';src: url('" + lib.qhly_path + "font/youyuan.ttf');}", 0);
-        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_songhei';src: url('" + lib.qhly_path + "font/songhei.ttf');}", 0);
-        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_weili';src: url('" + lib.qhly_path + "font/weili.ttf');}", 0);
+        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_heiti';src: url('" + lib.qhly_path + "font/heiti.woff2');}", 0);
+        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_zhunyuan';src: url('" + lib.qhly_path + "font/zhunyuan.woff2');}", 0);
+        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_youyuan';src: url('" + lib.qhly_path + "font/youyuan.woff2');}", 0);
+        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_songhei';src: url('" + lib.qhly_path + "font/songhei.woff2');}", 0);
+        ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_weili';src: url('" + lib.qhly_path + "font/weili.woff2');}", 0);
       } else {
         ui.qhlycss = lib.init.sheet();
-        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_heiti';src: url('" + lib.qhly_path + "font/heiti.ttf');}", 0);
-        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_zhunyuan';src: url('" + lib.qhly_path + "font/zhunyuan.ttf');}", 0);
-        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_youyuan';src: url('" + lib.qhly_path + "font/youyuan.ttf');}", 0);
-        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_songhei';src: url('" + lib.qhly_path + "font/songhei.ttf');}", 0);
-        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_weili';src: url('" + lib.qhly_path + "font/weili.ttf');}", 0);
+        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_heiti';src: url('" + lib.qhly_path + "font/heiti.woff2');}", 0);
+        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_zhunyuan';src: url('" + lib.qhly_path + "font/zhunyuan.woff2');}", 0);
+        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_youyuan';src: url('" + lib.qhly_path + "font/youyuan.woff2');}", 0);
+        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_songhei';src: url('" + lib.qhly_path + "font/songhei.woff2');}", 0);
+        ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_weili';src: url('" + lib.qhly_path + "font/weili.woff2');}", 0);
       }
       //关闭无名杀原有的换肤功能
       if (lib.config.change_skin) {
@@ -4824,6 +4831,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         var others = [];
         for (var arg of arguments) {//将参数拼接成一个字符串，方便查找映射
           if (typeof arg == 'string' || typeof arg == 'number') {
+            if(typeof arg == 'string'){
+              if(arg.startsWith('ext:')){
+                arg = arg.replace("ext:","../extension/");
+              }
+            }
             string = string + "/" + arg;
           } else {
             others.push(arg);
@@ -4859,6 +4871,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             }
           }
           var rp = lib.config.qhly_skinset.audioReplace[replace];
+          if((!rp || rp.length == 0) || replace.endsWith('.mp3')){
+            rp = lib.config.qhly_skinset.audioReplace[replace.slice(0,replace.length-4)];
+          }
           if (rp) {
             //如果存在映射，用映射的路径替换原有的路径，并调用原来的音频播放函数，以达到替换配音的效果。
             var args = rp.split("/");
@@ -6105,6 +6120,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                   lib.config.qhly_skinset.skin[name] = skin;
                   game.qhlySyncConfig();
                   if (save) game.qhly_refresh(name, skin);
+                  if(lib.announce){
+                    lib.announce.publish('qhlyChangeSkin',{
+                      characterName:name,
+                      skinName:skin,
+                    });
+                  }
                   if (lib.qhly_callbackList) {
                     for (var pubCallback of lib.qhly_callbackList) {
                       if (pubCallback.onChangeSkin) {
@@ -6131,6 +6152,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 lib.config.qhly_skinset.skin[name] = skin;
                 game.qhlySyncConfig();
                 if (save) game.qhly_refresh(name, skin);
+                if(lib.announce){
+                  lib.announce.publish('qhlyChangeSkin',{
+                    characterName:name,
+                    skinName:skin,
+                  });
+                }
                 if (lib.qhly_callbackList) {
                   for (let pubCallback of lib.qhly_callbackList) {
                     if (pubCallback.onChangeSkin) {
@@ -6169,6 +6196,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           delete lib.config.qhly_skinset.skinAudioList[name];
           game.qhlySyncConfig();
           if (save) game.qhly_refresh(name, skin);
+          if(lib.announce){
+            lib.announce.publish('qhlyChangeSkin',{
+              characterName:name,
+              skinName:skin,
+            });
+          }
           if (lib.qhly_callbackList) {
             for (let pubCallback of lib.qhly_callbackList) {
               if (pubCallback.onChangeSkin) {
@@ -7720,7 +7753,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               var campName = ui.create.div('.qhcamp-name', campWrap);
               campName.style.backgroundImage = 'url("' + lib.qhly_path + 'image/decoration/name_' + campWrap.getAttribute('data-camp') + '.png")';
               var avatarName = ui.create.div('.qhavatar-name', campWrap);
-              avatarName.innerText = get.slimName(name).replace(/<br>/g, '\n');
+              avatarName.innerHTML = lib.qhly_slimName(name);//.replace(/<br>/g, '\n');
               var hpWrap = ui.create.div('.qhhp-wrap', skinView);
               hpWrap.setAttribute("data-border-level", playerDengjie);
               skinView.belowText = ui.create.div('.qh-skinchange-decade-skin-text', hpWrap);
@@ -7964,7 +7997,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 var campName = ui.create.div('.qhcamp-name', campWrap);
                 campName.style.backgroundImage = 'url("' + lib.qhly_path + 'image/decoration/name_' + campWrap.getAttribute('data-camp') + '.png")';
                 var avatarName = ui.create.div('.qhavatar-name', campWrap);
-                avatarName.innerText = get.slimName(namey).replace(/<br>/g, '\n');
+                avatarName.innerHTML = lib.qhly_slimName(namey);//.replace(/<br>/g, '\n');
                 var hpWrap = ui.create.div('.qhhp-wrap', skinView);
                 hpWrap.setAttribute("data-border-level", playerDengjie);
                 skinView.belowText = ui.create.div('.qh-skinchange-decade-skin-text', hpWrap);
@@ -8655,7 +8688,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               var campName = ui.create.div('.qhcamp-name', campWrap);
               campName.style.backgroundImage = 'url("' + lib.qhly_path + 'image/decoration/name_' + campWrap.getAttribute('data-camp') + '.png")';
               var avatarName = ui.create.div('.qhavatar-name', campWrap);
-              avatarName.innerText = get.slimName(namex).replace(/<br>/g, '\n');
+              avatarName.innerHTML = lib.qhly_slimName(namex);//.replace(/<br>/g, '\n');
               var hpWrap = ui.create.div('.qhhp-shousha-wrap', skinView);
               skinView.belowText = ui.create.div('.qh-skinchange-shousha-skin-text', hpWrap);
               viewState1.skinViews.push(skinView);
@@ -8876,7 +8909,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                 var campName = ui.create.div('.qhcamp-name', campWrap);
                 campName.style.backgroundImage = 'url("' + lib.qhly_path + 'image/decoration/name_' + campWrap.getAttribute('data-camp') + '.png")';
                 var avatarName = ui.create.div('.qhavatar-name', campWrap);
-                avatarName.innerText = get.slimName(namey).replace(/<br>/g, '\n');
+                avatarName.innerHTML = lib.qhly_slimName(namey);//.replace(/<br>/g, '\n');
                 var hpWrap = ui.create.div('.qhhp-shousha-wrap', skinView);
                 skinView.belowText = ui.create.div('.qh-skinchange-shousha-skin-text', hpWrap);
                 viewState2.skinViews.push(skinView);
@@ -10764,6 +10797,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                       '动态': 'dongtai',
                       '绝版': 'jueban',
                     };
+                    if(lib.qhly_diylevels){
+                      for(var key in lib.qhly_diylevels){
+                        map[key] = "^^"+lib.qhly_diylevels[key];
+                        levels.add(key);
+                      }
+                    }
                     if (!lib.qhly_level[name + '_' + currentSkin.skinId]) {
                       opt.selected = 'selected';
                     }
@@ -10794,8 +10833,14 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                             game.saveConfig('qhly_level', lib.qhly_level);
                           }
                         }
-                        var skinQua = document.getElementById('qhly_skinQua' + that.viewState.viewCurrentIndex);
-                        if (skinQua) skinQua.style['background-image'] = 'url(' + lib.qhly_path + 'theme/decade/dc_' + game.qhly_getSkinLevel(name, currentSkin.skinId, true) + '.png)';
+                        var level = lib.qhly_level[name + '_' + currentSkin.skinId];
+                        if(level&& map[level] && map[level].startsWith("^^")){
+                          var skinQua = document.getElementById('qhly_skinQua' + that.viewState.viewCurrentIndex);
+                          if (skinQua) skinQua.style['background-image'] = 'url(' + lib.qhly_path + 'image/diylevels/'+map[level].replace("^^","")+")";
+                        }else{
+                          var skinQua = document.getElementById('qhly_skinQua' + that.viewState.viewCurrentIndex);
+                          if (skinQua) skinQua.style['background-image'] = 'url(' + lib.qhly_path + 'theme/decade/dc_' + game.qhly_getSkinLevel(name, currentSkin.skinId, true) + '.png)';
+                        }
                       }
                     };
 
@@ -14495,6 +14540,21 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         _status.qhly_buttonShowing = true;
       };
 
+      game.qhly_checkFileExist('extension/千幻聆音/image/diylevels', function (s) {
+        if (s && game.getFileList) {
+          game.getFileList('extension/千幻聆音/image/diylevels', function (folders, files) {
+            if (files) {
+              lib.qhly_diylevels = {};
+              for (var f of files) {
+                if (f.endsWith('.jpg') || f.endsWith('.webp') || f.endsWith('.png')) {
+                  lib.qhly_diylevels[game.qhly_earse_ext(f)] = f;
+                }
+              }
+            }
+          });
+        }
+      });
+
       game.qhly_checkFileExist('extension/千幻聆音/music/', function (s) {
         if (s && game.getFileList) {
           game.getFileList('extension/千幻聆音/music/', function (folders, files) {
@@ -15771,11 +15831,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "版本号："+"4.13.9"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.13.10"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.9",
+      version: "4.13.10",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;

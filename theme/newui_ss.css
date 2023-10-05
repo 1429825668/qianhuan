@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'QH_HYZLSJ';
-  src: local('隶简'), url('../font/QH_HYZLSJ.ttf');
+  src: local('隶简'), url('../font/QH_HYZLSJ.woff2');
 }
 
 @keyframes qh-jinjie {
@@ -1129,6 +1129,7 @@
   right: 26%;
   bottom: 1%;
   position: absolute;
+  writing-mode: vertical-lr;
 }
 
 .qhhp-decade-big-wrap {
