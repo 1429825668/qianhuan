@@ -61,7 +61,13 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
                     info2[key] = info[key];
                 }
             }
-            return get.stringify(info2);
+            if(info.subSkill){
+                for(var key in info.subSkill){
+                    let r = this.filterSkillInfo(info.subSkill[key]);
+                    info.subSkill[key] = r;
+                }
+            }
+            return info2;
         },
         handleView:function(view,name){
             var that = this;
@@ -71,7 +77,7 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
                     var input = document.getElementById('qh_input_skill_'+skill);
                     var copyImg = document.getElementById('qh_code_copy_'+skill);
                     if(input){
-                        var argi="lib.skill['"+skill+"']="+that.filterSkillInfo(get.info(skill));
+                        var argi="lib.skill['"+skill+"']="+get.stringify(that.filterSkillInfo(get.info(skill)));
                         var editor = window.CodeMirror.fromTextArea(input,{
                             mode:'javascript',
                             lineNumbers: true,     

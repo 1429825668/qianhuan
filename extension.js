@@ -1793,6 +1793,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         charlotte: true,
         content: function () {
           var current = trigger.source;
+          trigger._qhlyChangeKillSkin = true;
           game.qhly_changeSkillSkin(current, 'kill');
         }
       }
@@ -2439,6 +2440,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         } else return false;
       }
       game.qhly_checkYH = function (player, group) {
+        if(lib.config.qhly_circle_top === false)return;
         if (lib.config['extension_十周年UI_newDecadeStyle'] == "on") return;
         if (!player || get.itemtype(player) != 'player') return;
         let gro = player.group || group;
@@ -4871,7 +4873,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             }
           }
           var rp = lib.config.qhly_skinset.audioReplace[replace];
-          if((!rp || rp.length == 0) || replace.endsWith('.mp3')){
+          if((!rp || rp.length == 0) && replace.endsWith('.mp3')){
             rp = lib.config.qhly_skinset.audioReplace[replace.slice(0,replace.length-4)];
           }
           if (rp) {
@@ -11627,13 +11629,35 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           };
           state.onChangeSkin();
           refreshRank();
+          var pattern = lib.config.qhly_name_pattern;
+          if(!pattern)pattern = "full";
+          let getTranslation = (name)=>{
+            if(!get.slimNameHorizontal && pattern!='raw'){
+              if(!lib.config.qhly_metioned_slimName){
+                let r = prompt("你的无名杀版本暂不支持前缀文字显示，已经为你显示为原本的get.translation方式。点击“确认”不再提示此消息。");
+                if(r){
+                  game.saveConfig('qhly_metioned_slimName',true);
+                }
+              }
+              return get.translation(name);              
+            }else{
+              switch(pattern){
+                case "full":
+                  return get.slimNameHorizontal(name);
+                case "full_pure":
+                  return lib.qhly_filterPlainText(get.slimNameHorizontal(name));
+                case "raw":
+                  return get.rawName(name);
+              }
+            }
+          };
           if (state.pkg.characterNameTranslate) {
             chname = state.pkg.characterNameTranslate(state.name);
           } else {
-            chname = get.translation(state.name);
+            chname = getTranslation(state.name);
             if (!chname) {
               if (state.name.indexOf("gz_") == 0) {
-                chname = get.translation(state.name.silce(3));
+                chname = getTranslation(state.name.silce(3));
               }
             }
             if (!chname) {
@@ -11645,7 +11669,8 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           } else {
             subView.pageButton.introduce.downButton.hide();
           }
-          var vname = get.qhly_verticalStr(chname);
+          subView.nameTitle.innerHTML = chname;
+          var vname = get.qhly_verticalStr(lib.qhly_filterPlainText(chname));
           subView.name.innerHTML = vname;
           if (chname.length == 5) {
             subView.name.style.fontSize = '2.6em';
@@ -13586,13 +13611,35 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             }
           }
           refreshRank();
+          var pattern = lib.config.qhly_name_pattern;
+          if(!pattern)pattern = "full";
+          let getTranslation = (name)=>{
+            if(!get.slimNameHorizontal && pattern!='raw'){
+              if(!lib.config.qhly_metioned_slimName){
+                let r = prompt("你的无名杀版本暂不支持前缀文字显示，已经为你显示为原本的get.translation方式。点击“确认”不再提示此消息。");
+                if(r){
+                  game.saveConfig('qhly_metioned_slimName',true);
+                }
+              }
+              return get.translation(name);              
+            }else{
+              switch(pattern){
+                case "full":
+                  return currentViewSkin.isQiLayout?get.slimNameHorizontal(name):get.slimName(name);
+                case "full_pure":
+                  return lib.qhly_filterPlainText(get.slimName(name));
+                case "raw":
+                  return get.rawName(name);
+              }
+            }
+          };
           if (state.pkg.characterNameTranslate) {
             chname = state.pkg.characterNameTranslate(state.name);
           } else {
-            chname = get.translation(state.name);
+            chname = getTranslation(state.name);
             if (!chname) {
               if (state.name.indexOf("gz_") == 0) {
-                chname = get.translation(state.name.silce(3));
+                chname = getTranslation(state.name.silce(3));
               }
             }
             if (!chname) {
@@ -13607,8 +13654,9 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           if (currentViewSkin.isQiLayout) {
             subView.name.innerHTML = chname;
           } else {
-            var vname = get.qhly_verticalStr(chname);
+            var vname = chname;
             subView.name.innerHTML = vname;
+            subView.name.style.writingMode = 'vertical-lr';
           }
           if (!currentViewSkin.isQiLayout && !currentViewSkin.isLolBigLayout) {
             if (lib.qhly_groupcolor[group]) {
@@ -15175,6 +15223,20 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           game.saveConfig('qhly_showrarity', item);
         }
       },
+      "qhly_name_pattern":{
+        "name": "武将名显示",
+        "intro": "设置此选项，可调整界面武将名显示的内容。",
+        "init": lib.config.qhly_name_pattern === undefined ? "full" : lib.config.qhly_name_pattern,
+        "item": {
+          "full":"携带前缀",
+          "full_pure":"携带前缀（过滤样式）",
+          "raw":"武将姓名",
+        },
+        onclick: function (item) {
+          game.saveConfig('extension_千幻聆音_qhly_name_pattern', item);
+          game.saveConfig('qhly_name_pattern', item);
+        }
+      },
       'qhly_dragButton': {
         "name": "换肤按钮可拖曳",
         "intro": "打开此选项，人物头像上的换肤按钮可以拖动位置。（重启后生效）",
@@ -15431,6 +15493,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
           game.saveConfig('extension_千幻聆音_qhly_decadeCloseDynamic', item);
 
+        }
+      },
+      "qhly_circle_top":{
+        "name": "关闭圆顶",
+        "intro": "设置此选项，角色框将不会显示顶部圆弧。",
+        "init": lib.config.qhly_circle_top === undefined ? false : lib.config.qhly_circle_top,
+        onclick: function (item) {
+          game.saveConfig('extension_千幻聆音_qhly_circle_top', item);
+          game.saveConfig('qhly_circle_top', item);
         }
       },
       "qhly_playerwindow": {
@@ -15831,11 +15902,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "版本号："+"4.13.10"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.13.11"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.10",
+      version: "4.13.11",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;
