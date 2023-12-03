@@ -1534,7 +1534,7 @@ window.qhly_import(function(lib, game, ui, get, ai, _status){
               }
               var dynamicSkinList = [];
               if (window.decadeUI) {
-                if (decadeUI.dynamicSkin[name]) dynamicSkinList = Object.keys(decadeUI.dynamicSkin[name]);
+                if (decadeUI.dynamicSkin && decadeUI.dynamicSkin[name]) dynamicSkinList = Object.keys(decadeUI.dynamicSkin[name]);
                 for (var i of this.skinList) {
                   if (i.skinId) {
                     var skin = i.skinId.substring(0, i.skinId.lastIndexOf('.'));

@@ -3366,7 +3366,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_songhei';src: url('" + lib.qhly_path + "font/songhei.woff2');}", 0);
         ui.css.fontsheet.sheet.insertRule("@font-face {font-family: 'qh_weili';src: url('" + lib.qhly_path + "font/weili.woff2');}", 0);
       } else {
-        ui.qhlycss = lib.init.sheet();
+        if(!ui.qhlycss)ui.qhlycss = lib.init.sheet();
         ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_heiti';src: url('" + lib.qhly_path + "font/heiti.woff2');}", 0);
         ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_zhunyuan';src: url('" + lib.qhly_path + "font/zhunyuan.woff2');}", 0);
         ui.qhlycss.sheet.insertRule("@font-face {font-family: 'qh_youyuan';src: url('" + lib.qhly_path + "font/youyuan.woff2');}", 0);
@@ -5683,6 +5683,73 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           _status.qhly_skinListCache[name] = false;
           callback(false);
         }
+      };
+      game.qhly_getSkinModels = function(name,callback,locked,loadInfoJs){
+        game.qhly_getSkinList(name,function(ret, list){
+          let pkg = game.qhly_foundPackage(name);
+          var retList = [];
+          if (list) {
+            list.forEach((skin)=>{
+              var info = game.qhly_getSkinInfo(name, skin,pkg);
+              var obj = {
+                order: info.order,
+                skinId: skin,
+                skinInfo: info,
+                audios: get.qhly_getAudioInfoInSkin(name,pkg, skin),
+              };
+              retList.push(obj);
+            });
+          }
+          let skinList = [{
+            skinId: null,
+            skinInfo: game.qhly_getSkinInfo(name,null,pkg),
+            audios: get.qhly_getAudioInfoInSkin(name,pkg,null),
+          }];
+          retList.sort(function (a, b) {
+            var orderA = game.qhly_getOrder(name, a.skinId, pkg);
+            var orderB = game.qhly_getOrder(name, b.skinId, pkg);
+            if (orderA > orderB) return 1;
+            if (orderA == orderB) return 0;
+            return -1;
+          });
+          retList.forEach(item=>{skinList.push(item)});
+          let dynamicSkinList = [];
+          if (window.decadeUI) {
+            if (decadeUI.dynamicSkin && decadeUI.dynamicSkin[name]) dynamicSkinList = Object.keys(decadeUI.dynamicSkin[name]);
+            for (var i of skinList) {
+              if (i.skinId) {
+                var skin = i.skinId.substring(0, i.skinId.lastIndexOf('.'));
+                if (dynamicSkinList.contains(skin)) i.bothSkin = true;
+              }
+            }
+            if (dynamicSkinList.length) {
+              var duibiList = [];
+              for (var i of skinList) {
+                if (i.skinId && i.skinId != null) duibiList.push(i.skinId.substring(0, i.skinId.lastIndexOf('.')));
+              }
+              for (var i of dynamicSkinList) {
+                if (i == '经典形象') {
+                  skinList['0'].bothSkin = true;
+                  subView.skinType.style.cssText += 'transform:translateY(32%);';
+                }
+                else if (!duibiList.contains(i)) {
+                  var dyskin = i + '.jpg';
+                  var dyinfo = game.qhly_getSkinInfo(name,dyskin,pkg);
+                  skinList.push({
+                    order: dyinfo.order,
+                    skinId: dyskin,
+                    skinInfo: dyinfo,
+                    audios: get.qhly_getAudioInfoInSkin(name,pkg,dyskin),
+                    single: true,//11
+                  })
+                }
+              }
+            }
+          }
+          if(callback){
+            callback(skinList);
+          }
+        },locked,loadInfoJs);
       };
       //根据武将ID，皮肤文件名，查找皮肤的翻译命名。
       game.qhly_getSkinName = function (plname, filename, skinPackage) {
@@ -9287,6 +9354,10 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
       //打开选择皮肤界面。
       game.qhly_open_new = function (name, page, ingame) {
         try {
+          if(game.qhly_open_new_replace){
+            game.qhly_open_new_replace(name,page,ingame);
+            return;
+          }
           if(!game.qhly_checkLoadSuccess()){
               return;
           }
@@ -9362,7 +9433,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               game.qhly_initShoushaView(name, background, page, cplayer);
             }
           }
-          else game.qhly_initNewView(name, background, page, cplayer);
+          else if(game.qhly_initNewViewReplace){
+            game.qhly_initNewViewReplace(name, background, page, cplayer);
+          }else{
+            game.qhly_initNewView(name, background, page, cplayer);
+          }
           gback.show();
           game.pause2();
         } catch (e) {
@@ -14169,8 +14244,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
               var func = function (arr, f) {
                 if (arr.length == 0) return;
                 var n = arr.shift();
-                game.qhly_getSkinList(n, function (ret, list) {
+                game.qhly_getSkinModels(n, function (list) {
                   if (list && list.length) {
+                    list = list.map(item=>{
+                      if(item.skinId){
+                        return item.skinId;
+                      }else{
+                        return false;
+                      }
+                    });
                     var sk = game.qhly_getSkin(n);
                     var players = game.players.concat(game.dead);
                     var player;
@@ -14181,7 +14263,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
                     if (list.contains(sk)) {
                       list.remove(sk);
                     }
-                    if (sk) {
+                    if (sk && !list.contains(false)) {
                       list.push(false);
                     }
                     list = list.filter(function (current) {
@@ -14313,9 +14395,16 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         },
         content: function () {
           if (player.name || player.name1) {
-            game.qhly_getSkinList(player.name ? player.name : player.name1, function (ret, list) {
+            game.qhly_getSkinModels(player.name ? player.name : player.name1, function (list) {
               if (list && list.length) {
-                list.push(false);
+                list = list.map(item=>{
+                  if(item.skinId){
+                    return item.skinId;
+                  }else{
+                    return false;
+                  }
+                });
+                //list.push(false);
                 list = list.filter(function (current) {
                   return !game.qhly_skinIsBanned(player.name ? player.name : player.name1, current);
                 });
@@ -14325,9 +14414,16 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
             }, false);
           }
           if (player.name2) {
-            game.qhly_getSkinList(player.name2, function (ret, list) {
+            game.qhly_getSkinModels(player.name2, function (list) {
               if (list && list.length) {
-                list.push(false);
+                list = list.map(item=>{
+                  if(item.skinId){
+                    return item.skinId;
+                  }else{
+                    return false;
+                  }
+                });
+                //list.push(false);
                 list = list.filter(function (current) {
                   return !game.qhly_skinIsBanned(player.name2, current);
                 });
@@ -14632,6 +14728,33 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           }
         }
       });
+
+      game.qhly_refreshSuits = function(){
+        lib.extensionMenu['extension_千幻聆音']['qhly_currentViewSkin'] = {
+          "name": "UI套装",
+          "intro": "设置UI套装样式。",
+          "item": get.qhly_viewSkinSet(),
+          "init": lib.config.qhly_currentViewSkin === undefined ? 'xuanwujianghu' : lib.config.qhly_currentViewSkin,
+          onclick: function (item) {
+            if (lib.qhly_viewskin[item] && lib.qhly_viewskin[item].onchange) {
+              lib.qhly_viewskin[item].onchange();
+            }
+            game.saveConfig('qhly_currentViewSkin', item);
+            game.saveConfig('extension_千幻聆音_qhly_currentViewSkin', item);
+            if (confirm("是否重启游戏以应用新UI？")) {
+              game.reload();
+            }
+          }
+        };
+      };
+      _status.qianhuanLoaded = true;
+      if(Array.isArray(lib.doAfterQianhuanLoaded)){
+        for(let func of lib.doAfterQianhuanLoaded){
+          if(typeof func == 'function'){
+            func();
+          }
+        }
+      }
 //-----Q-----START-----
     }, precontent: function (config) {
 //-----Q-----END-----
@@ -14898,7 +15021,15 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
       window.qhly_version = 5;
       var cssUrl = lib.assetURL + 'extension/千幻聆音';
       lib.init.css(cssUrl, 'extension');
-      lib.init.css(cssUrl + '/theme', lib.config.qhly_viewskin_css ? lib.config.qhly_viewskin_css : 'newui');
+      if(lib.config.qhly_viewskin_css){
+        if(lib.config.qhly_viewskin_css.indexOf('extension/') == 0){
+          lib.init.css(lib.assetURL+lib.config.qhly_viewskin_css,'main');
+        }else{
+          lib.init.css(cssUrl + '/theme', lib.config.qhly_viewskin_css ? lib.config.qhly_viewskin_css : 'newui');
+        }
+      }else{
+        lib.init.css(cssUrl + '/theme','newui');
+      }
       window.qhly_import = function (func) {
         func(lib, game, ui, get, ai, _status);
       };
@@ -14947,11 +15078,12 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         })
       });
       if(lib.qhly_viewskin[lib.config.qhly_currentViewSkin] && lib.qhly_viewskin[lib.config.qhly_currentViewSkin].hasJs){
-        var vsJsPath = lib.qhly_path + 'theme/'+lib.config.qhly_currentViewSkin+"/code/"+lib.config.qhly_currentViewSkin+".js";
-        if(lib.init.jsForExtension){
+        let hasJs = lib.qhly_viewskin[lib.config.qhly_currentViewSkin].hasJs;
+        if(typeof hasJs == 'string'){
+          lib.init.jsForExtension([lib.qhly_path+"model/diy.js",hasJs]);
+        }else if(hasJs){
+          var vsJsPath = lib.qhly_path + 'theme/'+lib.config.qhly_currentViewSkin+"/code/"+lib.config.qhly_currentViewSkin+".js";
           lib.init.jsForExtension(vsJsPath);
-        }else{
-          lib.init.js(vsJsPath);
         }
       }
       window.qhly_audio_redirect = {
