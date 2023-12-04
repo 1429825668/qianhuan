@@ -981,6 +981,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         this.node.equips.show();
         this.name = character;
         this.name1 = character;
+        this.tempname=[];
         this.sex = info[0];
         this.group = info[1];
         this.hp = hp1;
@@ -1361,6 +1362,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         this.hp = undefined;
         this.maxHp = undefined;
         this.hujia = undefined;
+        this.tempname = undefined;
 
         this.clearSkills(true);
         this.node.identity.style.backgroundColor = '';
@@ -15276,6 +15278,20 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
           game.saveConfig('qhly_smallwinclosewhenchange', item);
         }
       },
+      "qhly_titlereplace": {
+        "name": "武将标题内容",
+        "intro": "设置此选项，可调整部分界面武将旁小字的内容。",
+        "init": lib.config.qhly_titlereplace === undefined ? "title" : lib.config.qhly_titlereplace,
+        "item": {
+          "title": "武将标题",
+          "skin": "皮肤名",
+          "pkg": "武将包名",
+        },
+        onclick: function (item) {
+          game.saveConfig('extension_千幻聆音_qhly_titlereplace', item);
+          game.saveConfig('qhly_titlereplace', item);
+        }
+      },
       /*
       "qhly_recordWin": {
         "name": "展示战绩",
@@ -15769,20 +15785,6 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         "name": "<font size='5' color='blue'>水墨龙吟相关设置》</font>",
         "clear": true,
       },
-      "qhly_titlereplace": {
-        "name": "武将旁小字内容",
-        "intro": "设置此选项，可调整【水墨龙吟】界面武将旁小字的内容。",
-        "init": lib.config.qhly_titlereplace === undefined ? "title" : lib.config.qhly_titlereplace,
-        "item": {
-          "title": "武将标题",
-          "skin": "皮肤名",
-          "pkg": "武将包名",
-        },
-        onclick: function (item) {
-          game.saveConfig('extension_千幻聆音_qhly_titlereplace', item);
-          game.saveConfig('qhly_titlereplace', item);
-        }
-      },
       "qhly_hanggaoxiufu": {
         "name": "技能名行高调整",
         "intro": "设置此选项，可调整【水墨龙吟】界面按钮的文字行高。",
@@ -16034,11 +16036,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "版本号："+"4.13.11"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.15.0"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.13.11",
+      version: "4.15.0",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;
