@@ -2442,7 +2442,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         } else return false;
       }
       game.qhly_checkYH = function (player, group) {
-        if(lib.config.qhly_circle_top === false)return;
+        if(lib.config.qhly_circle_top === true)return;
         if (lib.config['extension_十周年UI_newDecadeStyle'] == "on") return;
         if (!player || get.itemtype(player) != 'player') return;
         let gro = player.group || group;
@@ -9166,6 +9166,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         let newStr = str.slice(index0, index1) + 'game.qhly_changeSkillSkin(player, event.skill);\n' + str.slice(index1, index2);
         return newStr;
       }
+      /*
       function qhly_changeUseCard(str, num) {
         let index0 = str.indexOf('{') + 1;
         let index1 = str.indexOf('if(cardaudio');
@@ -9220,9 +9221,45 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         let f = use.toString();
         let newStr = str.slice(index0, index1) + "if(cardaudio)" + f.slice(19, f.length - 1) + str.slice(index2, index3);
         return newStr;
-      }
+      }*/
       lib.element.content.useSkill = new Function(qhly_changeUseSkill(lib.element.content.useSkill.toString()));
-      lib.element.content.useCard = new Function(qhly_changeUseCard(lib.element.content.useCard.toString()));
+      //lib.element.content.useCard = new Function(qhly_changeUseCard(lib.element.content.useCard.toString()));
+      var oldPlayCardAudio = game.playCardAudio;
+      game.playCardAudio=function(card,player){
+        if(!_status.event || (!['useCard','respond'].contains(_status.event.name))){
+          return oldPlayCardAudio(card,player);
+        }
+        if (lib.config.background_audio) {
+          var sex = player.sex == 'female' ? 'female' : 'male';
+          var audioinfo = lib.card[card.name].audio;
+          var skin = game.qhly_getSkin(player.name1);
+          if (lib.config.qhly_changeSex && lib.config.qhly_changeSex[player.name1] && lib.config.qhly_changeSex[player.name1][skin]) sex = (sex == 'female' ? 'male' : 'female');
+          var pkg = game.qhly_foundPackage(player.name1);
+          var realName = game.qhly_getRealName(player.name1);
+          var pkgPath = (pkg.isExt && realName != player.name1 && skin) ? DEFAULT_PACKAGE.audio : pkg.audio;
+          var exchangeCA = false;
+          var cardURL = pkgPath + (skin ? realName : player.name1) + '/' + game.qhly_earse_ext(skin) + '/';
+          if (lib.qhly_skinChange[realName] && lib.qhly_skinChange[realName][game.qhly_earse_ext(skin)] && lib.qhly_skinChange[realName][game.qhly_earse_ext(skin)].cardaudio) {
+            if (game.qhly_getPlayerStatus(player) == 2 && lib.qhly_skinChange[realName][game.qhly_earse_ext(skin)].audio1) cardURL = pkgPath + (skin ? realName : player.name1) + '/' + lib.qhly_skinChange[realName][game.qhly_earse_ext(skin)].audio1;
+            exchangeCA = true;
+          }
+          if (typeof audioinfo == 'string' && audioinfo.indexOf('ext:') == 0) {
+            game.playAudio('..', 'extension', audioinfo.slice(4), card.name + '_' + sex);
+          }
+          else {
+            if (exchangeCA) {
+              cardURL += card.name;
+              if (game.thunderFileExist(lib.assetURL + cardURL + '.mp3')) game.playAudio('..', cardURL);
+              else{
+                return game.playAudio('card', sex, card.name);
+              }
+            } else{
+              return game.playAudio('card', sex, card.name);
+            }
+          }
+        }
+      };
+      /*
       lib.element.content.respond = function () {
         'step 0'
         var cardaudio = true;
@@ -9347,6 +9384,7 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         'step 1'
         game.delayx(0.5);
       }
+      */
       game.qhly_checkLoadSuccess = function(){
         if(lib.config.qhly_currentViewSkin == 'shousha' && !game.qhly_initShoushaView){
           return false;
@@ -16036,11 +16074,11 @@ game.import("extension", function (lib, game, ui, get, ai, _status) {
         translate: {
         },
       },
-      intro: "版本号："+"4.15.0"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
+      intro: "版本号："+"4.15.1"+"<br>对局内实时换肤换音扩展！<br>感谢七.提供的【水墨龙吟】界面素材。<br>感谢灵徒℡丶提供的【海克斯科技】界面素材。<br>感谢雷开发的十周年、手杀界面。<br>感谢以下群友参与了BUG反馈，并给出了可行的建议：<br>柚子 Empty city° ꧁彥꧂ 折月醉倾城 世中人 ᴀᴅɪᴏs 废城<b><br><br>玄武江湖工作室群：522136249</b><br><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/xwjh_pic_erweima.jpg> <br><br><b>时空枢纽群：1075641665</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/sksn_pic_erweima.jpg> <br><br><b>千幻聆音皮肤群：646556261</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima.jpg><br><b>千幻聆音皮肤二群：859056471</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_erweima2.jpg><br><b>Thunder大雷音寺群：991761102</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_daleiyinsi.jpg><br><b>无名杀扩展交流公众号</b><img style=width:238px src=" + lib.assetURL + "extension/千幻聆音/image/qhly_pic_gzh.jpg>",
       author: "玄武江湖工作室 & 雷",
       diskURL: "",
       forumURL: "",
-      version: "4.15.0",
+      version: "4.15.1",
     }, files: { "character": [], "card": [], "skill": [] }
   };
   return window.qhly_extension_package;
